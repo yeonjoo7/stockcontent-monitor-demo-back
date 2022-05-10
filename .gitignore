@@ -6,3 +6,10 @@ config.json
 wire_gen.go
 .vscode
 .DS_Store
+
+ent/*.go
+ent/**/*.go
+!ent/generate.go
+!ent/schema/*
+
+

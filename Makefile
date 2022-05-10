@@ -2,17 +2,24 @@ ifndef BINARY
 	BINARY=debug
 endif
 
-GENERATE_PATH := $(shell go env GOPATH)/bin
+GO_BIN_PATH := $(shell go env GOPATH)/bin
 
 init:
 	go mod download all
 	go install github.com/swaggo/swag/cmd/swag
 	go install github.com/google/wire/cmd/wire@v0.5.0
+	go install entgo.io/ent/cmd/ent@v0.10.1
 
-generate: swagger wire
+gen: swagger wire ent-gen
 
 swagger:
-	${GENERATE_PATH}/swag init
+	${GO_BIN_PATH}/swag init
+
+entity:
+	${GO_BIN_PATH}/ent init $(name)
+
+entity-gen:
+	go generate ./ent
 
 wire:
-	${GENERATE_PATH}/wire .
+	${GO_BIN_PATH}/wire .
