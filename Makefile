@@ -23,3 +23,9 @@ entity-gen:
 
 wire:
 	${GO_BIN_PATH}/wire .
+
+go-run:
+	go run .
+
+go-build:
+	go build -ldflags="-X 'stockcontent-monitor-demo-back/build.runtimeProfile=PRODUCTION'" -o ${BINARY} .

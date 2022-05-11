@@ -3,6 +3,7 @@ docs/docs.go
 docs/swagger.json
 docs/swagger.yaml
 config.json
+config.local.json
 wire_gen.go
 .vscode
 .DS_Store

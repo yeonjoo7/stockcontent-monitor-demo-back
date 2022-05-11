@@ -2,6 +2,7 @@ package domain
 
 import (
 	"context"
+	"entgo.io/ent/dialect/sql"
 	"fmt"
 	"github.com/google/uuid"
 	"stockcontent-monitor-demo-back/ent"
@@ -23,14 +24,14 @@ type HelloDomain interface {
 }
 
 type HelloUseCase interface {
-	GenerateHello(ctx context.Context, value string) HelloDomain
-	GetHello(ctx context.Context, id uuid.UUID) HelloDomain
+	GenerateHello(ctx context.Context, value string) (HelloDomain, error)
+	GetHello(ctx context.Context, id uuid.UUID) (HelloDomain, error)
 }
 
 type HelloRepository interface {
 	Save(domain HelloDomain) error
 	GetOne(ctx context.Context, id uuid.UUID) HelloDomain
-	Transaction(ctx context.Context, fn func(HelloTxRepository) error) error
+	Transaction(ctx context.Context, opts *sql.TxOptions, fn func(HelloTxRepository) error) error
 }
 
 type HelloTxRepository interface {

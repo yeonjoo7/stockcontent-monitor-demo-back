@@ -1,8 +1,9 @@
 package main
 
-import (
-	_ "github.com/go-sql-driver/mysql"
-)
-
 func main() {
+	starter := getStarter()
+	err := starter()
+	if err != nil {
+		panic(err)
+	}
 }

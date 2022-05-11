@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"entgo.io/ent/dialect/sql"
 	"fmt"
 	"github.com/google/uuid"
 	"stockcontent-monitor-demo-back/domain"
@@ -9,14 +10,20 @@ import (
 	"stockcontent-monitor-demo-back/ent/hello"
 )
 
-var _ domain.HelloTxRepository = &mysqlEntRepo{}
+var _ domain.HelloTxRepository = &mysqlRepo{}
 
-type mysqlEntRepo struct {
+func NewHelloMySQLRepository(db *ent.Client) domain.HelloRepository {
+	return &mysqlRepo{
+		cli: db,
+	}
+}
+
+type mysqlRepo struct {
 	cli *ent.Client
 	tx  *ent.Tx
 }
 
-func (m *mysqlEntRepo) helloClient() *ent.HelloClient {
+func (m *mysqlRepo) helloClient() *ent.HelloClient {
 	if m.tx != nil {
 		return m.tx.Hello
 	}
@@ -28,18 +35,19 @@ func (m *mysqlEntRepo) helloClient() *ent.HelloClient {
 	return nil
 }
 
-func (m *mysqlEntRepo) Transaction(ctx context.Context, fn func(domain.HelloTxRepository) error) error {
-	tx, err := m.cli.Tx(ctx)
+func (m *mysqlRepo) Transaction(ctx context.Context, opts *sql.TxOptions, fn func(domain.HelloTxRepository) error) error {
+	tx, err := m.cli.BeginTx(ctx, opts)
 	if err != nil {
 		return err
 	}
+
 	defer func() {
 		if v := recover(); v != nil {
 			tx.Rollback()
 			panic(v)
 		}
 	}()
-	if err := fn(&mysqlEntRepo{tx: tx}); err != nil {
+	if err := fn(newHelloTxRepository(tx)); err != nil {
 		if rerr := tx.Rollback(); rerr != nil {
 			err = fmt.Errorf("%v, rolling back transaction: %v", err, rerr)
 			//err = errors.Wrapf(err, "rolling back transaction: %v", rerr)
@@ -53,11 +61,11 @@ func (m *mysqlEntRepo) Transaction(ctx context.Context, fn func(domain.HelloTxRe
 	return nil
 }
 
-func (m *mysqlEntRepo) GetTx() *ent.Tx {
+func (m *mysqlRepo) GetTx() *ent.Tx {
 	return m.tx
 }
 
-func (m *mysqlEntRepo) GetOne(ctx context.Context, id uuid.UUID) domain.HelloDomain {
+func (m *mysqlRepo) GetOne(ctx context.Context, id uuid.UUID) domain.HelloDomain {
 	h, err := m.helloClient().
 		Query().
 		Where(hello.ID(id)).
@@ -70,7 +78,7 @@ func (m *mysqlEntRepo) GetOne(ctx context.Context, id uuid.UUID) domain.HelloDom
 	return domain.FromHelloEntity(ctx, h)
 }
 
-func (m *mysqlEntRepo) Save(domain domain.HelloDomain) (err error) {
+func (m *mysqlRepo) Save(domain domain.HelloDomain) (err error) {
 	data := domain.RawData()
 	if domain.IsNew() {
 		_, err = m.helloClient().Create().
@@ -83,4 +91,8 @@ func (m *mysqlEntRepo) Save(domain domain.HelloDomain) (err error) {
 	}
 
 	return
+}
+
+func newHelloTxRepository(tx *ent.Tx) domain.HelloTxRepository {
+	return &mysqlRepo{tx: tx}
 }
