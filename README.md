@@ -53,14 +53,6 @@ $ make go-run
 $ go run .
 ```
 
-## Entity 생성
-```bash
-$ make entity name={엔티티이름}
-```
-
-`ent/schema/{엔티티이름}.go`로 생성됨
-
-
 ## Used
 ### HTTP Router
 [Echo Framework](https://echo.labstack.com/)
@@ -76,6 +68,9 @@ $ make entity name={엔티티이름}
     - ~~[swaggo/swag](https://github.com/swaggo/swag#declarative-comments-format)~~
     - ~~[swaggo/echo-swagger](https://github.com/swaggo/echo-swagger)~~
 - ~~[sirupsen/logrus](https://github.com/sirupsen/logrus) - Structured, pluggable logging for Go.~~ 준비중
+
+## Contributors Guide
+[보러가기](./CONTRIBUTING.md)
 
 # License
 [`MIT License`](./LICENSE)

@@ -8,6 +8,8 @@
 $ make entity name={도메인이름}
 ```
 
+`ent/schema/{엔티티이름}.go`로 생성됨
+
 - 필드 정의
 - 릴레이션 정의
 - **[Annotation](https://entgo.io/docs/schema-annotations#custom-table-name), 테이블명 명시 필수**
