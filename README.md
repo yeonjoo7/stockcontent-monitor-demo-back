@@ -12,7 +12,7 @@ $ pwd
 (~someDirectoryPath~)/stockcontent-monitor-demo-back
 $ make init
 ...
-$ make generate
+$ make gen
 ...
 ```
 

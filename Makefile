@@ -14,7 +14,7 @@ init:
 cfg:
 	go run stockcontent-monitor-demo-back/cmd/cfg
 
-gen: swagger wire ent-gen
+gen: swagger wire entity-gen
 
 swagger:
 	${GO_BIN_PATH}/swag init
