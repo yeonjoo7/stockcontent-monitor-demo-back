@@ -2,6 +2,8 @@ package schema
 
 import (
 	"entgo.io/ent"
+	"entgo.io/ent/dialect/entsql"
+	"entgo.io/ent/schema"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
 )
@@ -24,4 +26,10 @@ func (Hello) Fields() []ent.Field {
 // Edges of the Hello.
 func (Hello) Edges() []ent.Edge {
 	return nil
+}
+
+func (Hello) Annotations() []schema.Annotation {
+	return []schema.Annotation{
+		entsql.Annotation{Table: "hello"}, // 테이블명 명시
+	}
 }

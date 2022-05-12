@@ -31,14 +31,17 @@ var infraProviders = wire.NewSet(
 	db.New,
 )
 
+// repository
 var repositoryProviders = wire.NewSet(
 	repository.NewHelloMySQLRepository,
 )
 
+// useCase
 var useCaseProviders = wire.NewSet(
 	usecase.NewHelloUseCase,
 )
 
+// controller
 var controllerProviders = wire.NewSet(
 	handler.HelloControllerProvider,
 )
