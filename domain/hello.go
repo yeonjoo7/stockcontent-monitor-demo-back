@@ -39,7 +39,7 @@ type HelloTxRepository interface {
 	HelloRepository
 }
 
-var _ HelloDomain = &helloImpl{}
+var _ HelloDomain = (*helloImpl)(nil)
 
 func FromHelloEntity(ctx context.Context, entity *ent.Hello) HelloDomain {
 	return &helloImpl{

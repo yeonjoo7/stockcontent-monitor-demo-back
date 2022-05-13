@@ -14,7 +14,7 @@ type Config interface {
 	UseCaseTimeout() time.Duration
 }
 
-var _ Config = &configImpl{}
+var _ Config = (*configImpl)(nil)
 
 type configImpl struct {
 	DB struct {

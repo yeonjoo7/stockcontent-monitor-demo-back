@@ -7,7 +7,7 @@ import (
 	"time"
 )
 
-var _ domain.HelloUseCase = &helloUseCase{}
+var _ domain.HelloUseCase = (*helloUseCase)(nil)
 
 func NewHelloUseCase(
 	helloRepo domain.HelloRepository,

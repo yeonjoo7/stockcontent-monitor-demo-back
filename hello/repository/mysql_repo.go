@@ -10,7 +10,7 @@ import (
 	"stockcontent-monitor-demo-back/ent/hello"
 )
 
-var _ domain.HelloTxRepository = &mysqlRepo{}
+var _ domain.HelloTxRepository = (*mysqlRepo)(nil)
 
 func NewHelloMySQLRepository(db *ent.Client) domain.HelloRepository {
 	return &mysqlRepo{

@@ -45,7 +45,7 @@ type {{.}}TxRepository interface {
 	{{.}}Repository
 }
 
-var _ {{.}}Domain = &{{. | lower}}Impl{}
+var _ {{.}}Domain = (*{{. | lower}}Impl)(nil)
 
 func From{{.}}Entity(ctx context.Context, entity *ent.{{.}}) {{.}}Domain {
 	return &{{. | lower}}Impl{
@@ -115,7 +115,7 @@ import (
 	"time"
 )
 
-var _ domain.{{.}}UseCase = &{{. | lower}}UseCase{}
+var _ domain.{{.}}UseCase = (*{{. | lower}}UseCase)(nil)
 
 func New{{.}}UseCase(
 	{{. | lower}}Repo domain.{{.}}Repository,
@@ -150,7 +150,7 @@ import (
 	"stockcontent-monitor-demo-back/ent"
 )
 
-var _ domain.{{.}}TxRepository = &mysqlRepo{}
+var _ domain.{{.}}TxRepository = (*mysqlRepo)(nil)
 
 func NewH{{.}}MySQLRepository(db *ent.Client) domain.{{.}}Repository {
 	return &mysqlRepo{

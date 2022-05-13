@@ -9,7 +9,7 @@ type ContextDomain interface {
 	updated()
 }
 
-var _ ContextDomain = &baseContextDomain{}
+var _ ContextDomain = (*baseContextDomain)(nil)
 
 func newDomain(ctx context.Context) baseContextDomain {
 	return baseContextDomain{
