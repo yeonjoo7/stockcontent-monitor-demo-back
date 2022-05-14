@@ -1,4 +1,4 @@
-package provides
+package value
 
 import (
 	"stockcontent-monitor-demo-back/core/config"

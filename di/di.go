@@ -6,9 +6,9 @@ import (
 	"stockcontent-monitor-demo-back/core/config"
 	"stockcontent-monitor-demo-back/core/db"
 	"stockcontent-monitor-demo-back/core/echo"
-	"stockcontent-monitor-demo-back/core/echo/binder"
-	"stockcontent-monitor-demo-back/core/lifecycle"
-	"stockcontent-monitor-demo-back/di/provides"
+	"stockcontent-monitor-demo-back/core/echo/controller"
+	lifecycle2 "stockcontent-monitor-demo-back/di/lifecycle"
+	"stockcontent-monitor-demo-back/di/value"
 	"stockcontent-monitor-demo-back/hello/handler"
 	"stockcontent-monitor-demo-back/hello/repository"
 	"stockcontent-monitor-demo-back/hello/usecase"
@@ -16,9 +16,9 @@ import (
 
 var DI = wire.NewSet(
 	app.NewStarter,
-	lifecycle.ProvidesOnStart,
-	lifecycle.ProvidesOnClose,
-	binder.ProvidesController,
+	lifecycle2.ProvidesOnStart,
+	lifecycle2.ProvidesOnClose,
+	CastControllers,
 	staticValue,
 	repositoryProviders,
 	useCaseProviders,
@@ -41,6 +41,14 @@ var useCaseProviders = wire.NewSet(
 	usecase.NewHelloUseCase,
 )
 
+func CastControllers(
+	c1 *handler.HelloController,
+) controller.Controllers {
+	return controller.Controllers{
+		c1,
+	}
+}
+
 // controller
 var controllerProviders = wire.NewSet(
 	handler.HelloControllerProvider,
@@ -48,5 +56,5 @@ var controllerProviders = wire.NewSet(
 
 var staticValue = wire.NewSet(
 	wire.InterfaceValue(new(config.Config), config.Default),
-	provides.ProvidesTimeout,
+	value.ProvidesTimeout,
 )

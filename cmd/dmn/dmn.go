@@ -77,9 +77,9 @@ import (
 	"github.com/google/wire"
 	"github.com/labstack/echo/v4"
 	"net/http"
+	"stockcontent-monitor-demo-back/core/echo/controller"
 	"stockcontent-monitor-demo-back/domain"
 )
-
 
 const (
 	tag = "{{. | upper}}-CONTROLLER"
@@ -88,6 +88,8 @@ const (
 var {{.}}ControllerProvider = wire.NewSet(
 	wire.Struct(new({{.}}Controller), "*"),
 )
+
+var _ controller.Controller = (*{{.}}Controller)(nil)
 
 type {{.}}Controller struct {
 	UseCase domain.{{.}}UseCase

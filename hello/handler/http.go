@@ -4,6 +4,7 @@ import (
 	"github.com/google/wire"
 	"github.com/labstack/echo/v4"
 	"net/http"
+	"stockcontent-monitor-demo-back/core/echo/controller"
 	"stockcontent-monitor-demo-back/domain"
 )
 
@@ -14,6 +15,8 @@ const (
 var HelloControllerProvider = wire.NewSet(
 	wire.Struct(new(HelloController), "*"),
 )
+
+var _ controller.Controller = (*HelloController)(nil)
 
 type HelloController struct {
 	UseCase domain.HelloUseCase
