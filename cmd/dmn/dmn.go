@@ -154,7 +154,7 @@ import (
 
 var _ domain.{{.}}TxRepository = (*mysqlRepo)(nil)
 
-func NewH{{.}}MySQLRepository(db *ent.Client) domain.{{.}}Repository {
+func New{{.}}MySQLRepository(db *ent.Client) domain.{{.}}Repository {
 	return &mysqlRepo{
 		cli: db,
 	}
