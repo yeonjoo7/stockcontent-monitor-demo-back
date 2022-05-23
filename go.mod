@@ -7,6 +7,11 @@ require gorm.io/datatypes v1.0.6
 require github.com/dgrijalva/jwt-go v3.2.0+incompatible // indirect
 
 require (
+	github.com/labstack/echo v3.3.10+incompatible
+	gorm.io/datatypes v1.0.6
+)
+
+require (
 	github.com/go-sql-driver/mysql v1.6.0 // indirect
 	github.com/google/uuid v1.3.0 // indirect
 	github.com/jinzhu/inflection v1.0.0 // indirect
