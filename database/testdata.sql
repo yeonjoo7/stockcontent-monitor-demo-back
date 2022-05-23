@@ -1,15 +1,13 @@
 INSERT INTO
 video
-
 (content_id,
-state,
-video_url,
+state_label,
+sample_content,
 subject,
 description,
-thumbnail_img,
+thumb,
 tags,
 uploaded_at)
-
 VALUES
 ("615ada5f-7091-49cb-bc43-480bd5e29c5f","NONE","https://player.vimeo.com/external/442255041.sd.mp4?s=c6894ba65bc97d9121a6f4457f24ed6d7d0aca68&profile_id=139&oauth2_token_id=57447761","눈 오는 날","","",'{"tags":"눈"}','2020-11-19 21:17:32.054'),
 ("de8d4c5b-0dc8-4c3e-8420-f7bde5716c7d","DENY","https://player.vimeo.com/external/372340634.sd.mp4?s=0318c856eb8cedf0fe4c1fe1b0587e8474001304&profile_id=139&oauth2_token_id=57447761","수영장 튜브 둥둥","","",'{"tags":"눈"}','2020-11-19 21:17:32.054'),
@@ -39,13 +37,10 @@ VALUES
 ("6a8525aa-e41e-473c-9ebe-5309e44648a9","DENY","https://player.vimeo.com/external/343569324.sd.mp4?s=ca887de46d059510f7bb3f499dbab0d8c2681f06&profile_id=139&oauth2_token_id=57447761","숲 속의 철도","","",'{"tags":"눈"}','2020-11-19 21:17:32.054'),
 ("a00ed308-1ee8-4fa7-aa1e-50e19b6c8b0a","APPROVE","https://player.vimeo.com/external/173243312.sd.mp4?s=c7e35686f184865a06c88f2d40271a528f4a7bb1&profile_id=164&oauth2_token_id=57447761","걷는 사람들의 흐릿한 군중","","",'{"tags":"눈"}','2020-11-19 21:17:32.054'),
 ("6498cc85-529d-46d3-913e-6b32aed0e1c8","NONE","https://player.vimeo.com/external/332093587.sd.mp4?s=3fae3d2ef16a129b068ae652f2bb213d82828cd1&profile_id=139&oauth2_token_id=57447761","타입 랩스 모드로 여행하는 차량","","",'{"tags":"눈"}','2020-11-19 21:17:32.054');
-
-
+-- 반려 태그 테이블
 INSERT INTO
 deny_tag
-
 (content)
-
 VALUES
 ("흔들린 영상"),
 ("타기업 로고 노출"),
@@ -54,17 +49,15 @@ VALUES
 ("적절하지 않은 태그"),
 ("비속어가 포함됨"),
 ("도용된 영상");
-
+-- 반려 기록 테이블
 INSERT INTO
 deny_log
-
 (
   log_id,
   content_id,
   reason,
   denied_at
 )
-
 VALUES
 (1,"de8d4c5b-0dc8-4c3e-8420-f7bde5716c7d","그냥",'2022-05-20 21:17:32.054'),
 (2,"864f49c7-c5c0-4edd-8869-c2052fe58e47","",'2022-05-20 15:17:32.054'),
@@ -75,15 +68,13 @@ VALUES
 (7,"63c1499a-1bd9-4472-9256-814ab0428021","",'2022-05-20 17:20:32.054'),
 (8,"d918a8a0-4081-4424-a1fb-d6675034420a","",'2022-05-20 10:20:32.054'),
 (9,"6a8525aa-e41e-473c-9ebe-5309e44648a9","",'2022-05-20 10:20:32.054');
-
+-- 중간 테이블
 INSERT INTO
 stock_content_deny_tag
-
 (
   deny_log_entity_log_id,
   deny_tag_entity_tag_id
 )
-
 VALUES
 (1,2),
 (6,1);

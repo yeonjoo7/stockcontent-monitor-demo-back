@@ -55,7 +55,7 @@ func main() {
 			return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 		}
 
-		var deny_log []DenylogEntity
+		// var deny_log []DenylogEntity
 
 		err = db.Transaction(func(tx *gorm.DB) (err error) {
 			// value update
@@ -63,7 +63,7 @@ func main() {
 
 			err = tx.Clauses(clause.Locking{
 				Strength: "UPDATE",
-			}).First(&hello, binder.HelloId).Error
+			}).First(&deny_log, binder.Content_id).Error
 			if err != nil {
 				return
 			}
