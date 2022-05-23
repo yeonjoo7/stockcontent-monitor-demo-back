@@ -26,6 +26,83 @@ func main() {
 
 	e := echo.New()
 
+	e.GET("/deny-tag", func(c echo.Context) error {
+
+		var denyTag []DenyTagEntity
+		err := db.Find(&denyTag).Error
+
+		if err == gorm.ErrRecordNotFound {
+			return echo.NewHTTPError(http.StatusNotFound, "Content entity not found")
+		} else if err != nil {
+			return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
+		}
+
+		return c.JSON(http.StatusOK, denyTag)
+
+	})
+
+	// e.POST("/content/:id/deny", func(c echo.Context) error {
+	// 	var binder struct {
+	// 		Content_id uuid.UUID `json:"-" param:"id"`
+	// 		Reason     string    `json:"Description"`
+	// 		Tag        []string  `json:"tag_id"`
+	// 	}
+
+	// 	err := c.Bind(&binder)
+	// 	if err != nil {
+	// 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+	// 	}
+
+	// 	// var deny_log DenylogEntity
+
+	// 	err = db.Transaction(func(tx *gorm.DB) (err error) {
+	// 		// value update
+	// 		// business logic
+
+	// 		err = tx.M(&denyLog, binder.Content_id).Error
+	// 		if err != nil {
+	// 			return
+	// 		}
+
+	// 		hello.Name = binder.Name
+	// 		err = tx.Save(&hello).Error
+	// 		return
+	// 	}, &sql.TxOptions{
+	// 		Isolation: sql.LevelSerializable,
+	// 	})
+
+	// 	if err == gorm.ErrRecordNotFound {
+	// 		return echo.NewHTTPError(http.StatusNotFound, "hello entity not found")
+	// 	} else if err != nil {
+	// 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
+	// 	}
+
+	// 	return c.NoContent(http.StatusNoContent)
+	// })
+
+	// ===========================================================================
+	// ===========================================================================
+	// ===========================================================================
+
+	e.POST("/hello", func(c echo.Context) error {
+		var hello HelloEntity
+		err := c.Bind(&hello)
+		if err != nil {
+			return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+		}
+
+		hello.Id = uuid.New()
+		err = db.Create(&hello).Error
+
+		if err != nil {
+			return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
+		}
+
+		return c.JSON(http.StatusCreated, echo.Map{
+			"id": hello.Id,
+		})
+	})
+
 	content := e.Group("/content")
 	{
 		// GET
@@ -203,6 +280,8 @@ func main() {
 // 	sqlDB.SetMaxOpenConns(15)
 // 	return db
 // }
+
+// hello entity
 
 type HelloEntity struct {
 	Id   uuid.UUID `gorm:"type:char(36);primaryKey" json:"id"`
