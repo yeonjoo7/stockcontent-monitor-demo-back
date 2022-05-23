@@ -43,45 +43,44 @@ func main() {
 
 	})
 
-	e.POST("/content/:id/deny", func(c echo.Context) error {
-		var binder struct {
-			Content_id  uuid.UUID `json:"-" param:"id"`
-			Description string    `json:"Description"`
-			tag         []string  `json:"tag_id"`
-		}
+	// e.POST("/content/:id/deny", func(c echo.Context) error {
+	// 	var binder struct {
+	// 		Content_id uuid.UUID `json:"-" param:"id"`
+	// 		Reason     string    `json:"Description"`
+	// 		Tag        []string  `json:"tag_id"`
+	// 	}
 
-		err := c.Bind(&binder)
-		if err != nil {
-			return echo.NewHTTPError(http.StatusBadRequest, err.Error())
-		}
+	// 	err := c.Bind(&binder)
+	// 	if err != nil {
+	// 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+	// 	}
 
-		// var deny_log []DenylogEntity
+	// 	// var deny_log DenylogEntity
 
-		err = db.Transaction(func(tx *gorm.DB) (err error) {
-			// value update
-			// business logic
+	// 	err = db.Transaction(func(tx *gorm.DB) (err error) {
+	// 		// value update
+	// 		// business logic
 
-			err = tx.Clauses(clause.Locking{
-				Strength: "UPDATE",
-			}).First(&deny_log, binder.Content_id).Error
-			if err != nil {
-				return
-			}
-			hello.Name = binder.Name
-			err = tx.Save(&hello).Error
-			return
-		}, &sql.TxOptions{
-			Isolation: sql.LevelSerializable,
-		})
+	// 		err = tx.M(&denyLog, binder.Content_id).Error
+	// 		if err != nil {
+	// 			return
+	// 		}
 
-		if err == gorm.ErrRecordNotFound {
-			return echo.NewHTTPError(http.StatusNotFound, "hello entity not found")
-		} else if err != nil {
-			return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
-		}
+	// 		hello.Name = binder.Name
+	// 		err = tx.Save(&hello).Error
+	// 		return
+	// 	}, &sql.TxOptions{
+	// 		Isolation: sql.LevelSerializable,
+	// 	})
 
-		return c.NoContent(http.StatusNoContent)
-	})
+	// 	if err == gorm.ErrRecordNotFound {
+	// 		return echo.NewHTTPError(http.StatusNotFound, "hello entity not found")
+	// 	} else if err != nil {
+	// 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
+	// 	}
+
+	// 	return c.NoContent(http.StatusNoContent)
+	// })
 
 	// ===========================================================================
 	// ===========================================================================
