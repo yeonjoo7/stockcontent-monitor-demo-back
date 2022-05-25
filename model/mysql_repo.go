@@ -1,12 +1,13 @@
 package model
 
 import (
+	"database/sql/driver"
 	"os"
+	"stockcontent-monitor-demo-back/util/sqlx"
 
 	"time"
 
 	"github.com/google/uuid"
-	"gorm.io/datatypes"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 )
@@ -52,15 +53,26 @@ func (HelloEntity) TableName() string {
 // video entity
 
 type VideoEntity struct {
-	ContentId     uuid.UUID      `gorm:"type:varchar(36);primaryKey;not null;" json:"contentId"`
-	StateLabel    Videostate     `gorm:"type:varchar(30);not null;default:NONE;"  json:"stateLabel" validate:"eq=APPORVE|eq=DENY|eq=NONE"`
-	MonitorExp    int64          `gorm:"autoUpdateTime:milli;" json:"monitorExp"`
-	Subject       string         `gorm:"type:varchar(60);not null" json:"subject"`
-	Description   string         `gorm:"type:varchar(300);not null" json:"description"`
-	Thumb         string         `gorm:"not null" json:"thumb"`
-	SampleContent string         `gorm:"not null" json:"sampleContent"`
-	Tags          datatypes.JSON `gorm:"type:json" json:"tags"`
-	UploadedAt    time.Time      `gorm:"type:datetime(6);not null;" json:"uploadedAt"`
+	ContentId     uuid.UUID  `gorm:"type:varchar(36);primaryKey;not null;" json:"contentId"`
+	StateLabel    Videostate `gorm:"type:varchar(30);not null;default:NONE;"  json:"stateLabel" validate:"eq=APPORVE|eq=DENY|eq=NONE"`
+	MonitorExp    int64      `gorm:"autoUpdateTime:milli;" json:"monitorExp"`
+	Subject       string     `gorm:"type:varchar(60);not null" json:"subject"`
+	Description   string     `gorm:"type:varchar(300);not null" json:"description"`
+	Thumb         string     `gorm:"not null" json:"thumb"`
+	SampleContent string     `gorm:"not null" json:"sampleContent"`
+	Tags          []string   `gorm:"type:json" json:"tags"`
+	// Tags       datatypes.JSON `gorm:"type:json" json:"tags"`
+	UploadedAt time.Time `gorm:"type:datetime(6);not null;" json:"uploadedAt"`
+
+	DenyLogs []DenyLogEntity `gorm:"foreignKey:ContentId" json:"denyLog"`
+}
+
+func (t DenyTagEntity) Value() (driver.Value, error) {
+	return sqlx.JsonValue(t)
+}
+
+func (t *DenyTagEntity) Scan(src interface{}) error {
+	return sqlx.JsonScan(t, src)
 }
 
 type Videostate string
@@ -102,16 +114,12 @@ func (DenyTagEntity) TableName() string {
 }
 
 func migrate(db *gorm.DB) {
-	err := db.AutoMigrate(&HelloEntity{}, &DenyTagEntity{}, &VideoEntity{}, &DenyLogEntity{})
-	db.Exec("ALTER TABLE deny_log ADD FOREIGN KEY (content_id) REFERENCES video(content_id);")
+	err := db.AutoMigrate(&DenyTagEntity{}, &VideoEntity{}, &DenyLogEntity{})
+	// db.Exec("ALTER TABLE deny_log ADD FOREIGN KEY (content_id) REFERENCES video(content_id);")
 	if err != nil {
 		panic(err)
 	}
 }
-
-// const (
-// 	F_DENY string = "DENY"
-// )
 
 func isValid(state VideoEntity) bool {
 
