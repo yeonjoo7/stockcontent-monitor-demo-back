@@ -10,6 +10,7 @@ import (
 	"github.com/google/uuid"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
 )
 
 func MysqlRepo() *gorm.DB {
@@ -20,7 +21,10 @@ func MysqlRepo() *gorm.DB {
 
 func getDB() *gorm.DB {
 	conn := os.Getenv("DB_CONN")
-	db, err := gorm.Open(mysql.Open(conn), &gorm.Config{})
+
+	db, err := gorm.Open(mysql.Open(conn), &gorm.Config{
+		Logger: logger.Default.LogMode(logger.Info),
+	})
 	if err != nil {
 		panic(err)
 	}
