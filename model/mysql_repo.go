@@ -9,6 +9,7 @@ import (
 	"gorm.io/datatypes"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
 )
 
 func MysqlRepo() *gorm.DB {
@@ -19,7 +20,10 @@ func MysqlRepo() *gorm.DB {
 
 func getDB() *gorm.DB {
 	conn := os.Getenv("DB_CONN")
-	db, err := gorm.Open(mysql.Open(conn), &gorm.Config{})
+
+	db, err := gorm.Open(mysql.Open(conn), &gorm.Config{
+		Logger: logger.Default.LogMode(logger.Info),
+	})
 	if err != nil {
 		panic(err)
 	}
@@ -61,6 +65,8 @@ type VideoEntity struct {
 	SampleContent string         `gorm:"not null" json:"sampleContent"`
 	Tags          datatypes.JSON `gorm:"type:json" json:"tags"`
 	UploadedAt    time.Time      `gorm:"type:datetime(6);not null;" json:"uploadedAt"`
+
+	DenyLogs []DenyLogEntity `gorm:"foreignKey:ContentId"`
 }
 
 type Videostate string
@@ -103,15 +109,11 @@ func (DenyTagEntity) TableName() string {
 
 func migrate(db *gorm.DB) {
 	err := db.AutoMigrate(&HelloEntity{}, &DenyTagEntity{}, &VideoEntity{}, &DenyLogEntity{})
-	db.Exec("ALTER TABLE deny_log ADD FOREIGN KEY (content_id) REFERENCES video(content_id);")
+	// db.Exec("ALTER TABLE deny_log ADD FOREIGN KEY (content_id) REFERENCES video(content_id);")
 	if err != nil {
 		panic(err)
 	}
 }
-
-// const (
-// 	F_DENY string = "DENY"
-// )
 
 func isValid(state VideoEntity) bool {
 

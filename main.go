@@ -1,6 +1,8 @@
 package main
 
 import (
+	// "database/sql"
+	"database/sql"
 	"net/http"
 	"os"
 	"stockcontent-monitor-demo-back/controller"
@@ -40,45 +42,67 @@ func main() {
 		return c.JSON(http.StatusOK, denyTag)
 
 	})
+	e.POST("/content/:id/deny", func(c echo.Context) error {
+		var ChangeDenyEntity struct {
+			Content_id uuid.UUID `json:"-" param:"id"`
+			Reason     string    `json:"reason"`
+			Tag_id     []int     `json:"tag"`
+		}
 
-	// e.POST("/content/:id/deny", func(c echo.Context) error {
-	// 	var binder struct {
-	// 		Content_id uuid.UUID `json:"-" param:"id"`
-	// 		Reason     string    `json:"Description"`
-	// 		Tag        []string  `json:"tag_id"`
-	// 	}
+		err := c.Bind(&ChangeDenyEntity)
 
-	// 	err := c.Bind(&binder)
-	// 	if err != nil {
-	// 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
-	// 	}
+		if err != nil {
+			return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+		}
 
-	// 	// var deny_log DenylogEntity
+		err = db.Transaction(func(tx *gorm.DB) (err error) {
 
-	// 	err = db.Transaction(func(tx *gorm.DB) (err error) {
-	// 		// value update
-	// 		// business logic
+			var video VideoEntity
+			var logId DenyLogEntity
 
-	// 		err = tx.M(&denyLog, binder.Content_id).Error
-	// 		if err != nil {
-	// 			return
-	// 		}
+			tx.Model(&video).Where("content_id = ?", ChangeDenyEntity.Content_id).Update("state_label", "DENY")
+			tx.Exec("INSERT INTO deny_log(content_id, reason, denied_at) VALUES ( ? , ? , ?);", ChangeDenyEntity.Content_id, ChangeDenyEntity.Reason, time.Now())
+			tx.Last(&logId)
+			for i := 0; i < len(ChangeDenyEntity.Tag_id); i++ {
+				tx.Exec("INSERT INTO stock_content_deny_tag VALUES ( ?, ? );", logId.LogId, ChangeDenyEntity.Tag_id[i])
+			}
 
-	// 		hello.Name = binder.Name
-	// 		err = tx.Save(&hello).Error
-	// 		return
-	// 	}, &sql.TxOptions{
-	// 		Isolation: sql.LevelSerializable,
-	// 	})
+			return
+		}, &sql.TxOptions{
+			Isolation: sql.LevelSerializable,
+		})
 
-	// 	if err == gorm.ErrRecordNotFound {
-	// 		return echo.NewHTTPError(http.StatusNotFound, "hello entity not found")
-	// 	} else if err != nil {
-	// 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
-	// 	}
+		if err == gorm.ErrRecordNotFound {
+			return echo.NewHTTPError(http.StatusNotFound, "DENY entity not found")
+		} else if err != nil {
+			return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
+		}
+		return c.JSON(http.StatusOK, " message : Change DENY SUCCESS ")
 
-	// 	return c.NoContent(http.StatusNoContent)
-	// })
+	})
+
+	e.POST("/content/:id/approve", func(c echo.Context) error {
+		var ChangeApproceEntity struct {
+			Content_id uuid.UUID `json:"-" param:"id"`
+		}
+
+		err := c.Bind(&ChangeApproceEntity)
+
+		if err != nil {
+			return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+		}
+
+		var video VideoEntity
+		db.Model(&video).Where("content_id = ?", ChangeApproceEntity.Content_id).Update("state_label", "APPROVE")
+
+		if err == gorm.ErrRecordNotFound {
+			return echo.NewHTTPError(http.StatusNotFound, "APPROVE entity not found")
+		} else if err != nil {
+			return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
+		}
+		return c.JSON(http.StatusOK, " message : Change APPROVE SUCCESS ")
+
+	})
 
 	// ===========================================================================
 	// ===========================================================================
