@@ -168,7 +168,7 @@ func main() {
 				var DenyLogResult []denyLogResult
 
 				db.Raw(`SELECT dl.log_id, dl.content_id, dl.reason, dl.denied_at, 
-				group_concat(json_array(dt.content)) AS deny_tag 
+				group_concat(dt.content) AS deny_tag 
 				FROM deny_log dl 
 				LEFT JOIN stock_content_deny_tag sc ON dl.log_id=sc.deny_log_entity_log_id 
 				LEFT JOIN deny_tag dt	ON sc.deny_tag_entity_tag_id=dt.tag_id 
