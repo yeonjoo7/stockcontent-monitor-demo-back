@@ -132,18 +132,28 @@ func main() {
 				return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 			}
 
-			var video VideoEntity
+			var Video VideoEntity
 
-			err = db.First(&video, binder.ContentId).Error
+			err = db.First(&Video, binder.ContentId).Error
 			if err == gorm.ErrRecordNotFound {
 				return echo.NewHTTPError(http.StatusNotFound, "No record")
 			} else if err != nil {
 				return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 			}
 
+			// content-label 변환
+
+			if Video.StateLabel == "NONE" {
+				if Video.MonitorExp-time.Now().Unix() > 0 {
+					Video.StateLabel = "CHECK"
+				} else {
+					Video.StateLabel = "WAIT"
+				}
+			}
+
 			// content의 stateLabel만 반환
 
-			return c.JSON(http.StatusOK, video.StateLabel)
+			return c.JSON(http.StatusOK, echo.Map{"stateLabel": Video.StateLabel})
 		})
 
 		content.GET("/:id",
@@ -286,7 +296,6 @@ func main() {
 			if start != "" {
 				startInt, _ := strconv.Atoi(start)
 				itemsSplit = items[startInt:]
-				itemsSplit = itemsSplit[:limit]
 			} else {
 				itemsSplit = items
 			}
@@ -296,8 +305,8 @@ func main() {
 			return c.JSON(http.StatusOK, result)
 		})
 
-		// POST
-		content.POST("/:id/monitoring", func(c echo.Context) error {
+		// PUT
+		content.PUT("/:id/monitoring", func(c echo.Context) error {
 			var binder struct {
 				ContentId uuid.UUID `param:"id"`
 			}
@@ -320,7 +329,9 @@ func main() {
 			db.Save(&video)
 
 			timer := "Time to monitor ends in 10 minutes"
-			return c.JSON(http.StatusOK, timer)
+			return c.JSON(http.StatusOK, echo.Map{
+				"message": timer,
+			})
 		})
 	}
 
