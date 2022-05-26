@@ -31,16 +31,23 @@ func main() {
 	db := model.MysqlRepo()
 	e := echo.New()
 
+	e.GET("/", func(c echo.Context) error {
+		return c.JSON(http.StatusOK, echo.Map{
+			"message": "hello world",
+		})
+	})
 	e.GET("/deny-tag", func(c echo.Context) error {
 
 		var denyTag []DenyTagEntity
 		err := db.Find(&denyTag).Error
 
-		if err == gorm.ErrRecordNotFound {
-			return echo.NewHTTPError(http.StatusNotFound, "Content entity not found")
-		} else if err != nil {
+		if err != nil {
 			return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 		}
+
+		// if len(denyTag) == 0 {
+		// 	return c.NoContent(http.StatusNoContent)
+		// }
 
 		return c.JSON(http.StatusOK, denyTag)
 
@@ -61,18 +68,23 @@ func main() {
 		err = db.Transaction(func(tx *gorm.DB) (err error) {
 
 			var video VideoEntity
-			var logId DenyLogEntity
+			logId := DenyLogEntity{
+				ContentId: ChangeDenyEntity.Content_id,
+				Reason:    ChangeDenyEntity.Reason,
+				DeniedAt:  time.Now(),
+			}
 
 			tx.Model(&video).Where("content_id = ?", ChangeDenyEntity.Content_id).Update("state_label", "DENY")
-			tx.Exec("INSERT INTO deny_log(content_id, reason, denied_at) VALUES ( ? , ? , ?);", ChangeDenyEntity.Content_id, ChangeDenyEntity.Reason, time.Now())
-			tx.Last(&logId)
+			tx.Create(&logId)
+			// tx.Exec("INSERT INTO deny_log(content_id, reason, denied_at) VALUES ( ? , ? , ?);", ChangeDenyEntity.Content_id, ChangeDenyEntity.Reason, time.Now())
+			// 	tx.Last(&logId)
 			for i := 0; i < len(ChangeDenyEntity.Tag_id); i++ {
 				tx.Exec("INSERT INTO stock_content_deny_tag VALUES ( ?, ? );", logId.LogId, ChangeDenyEntity.Tag_id[i])
 			}
 
 			return
 		}, &sql.TxOptions{
-			Isolation: sql.LevelSerializable,
+			Isolation: sql.LevelRepeatableRead,
 		})
 
 		if err == gorm.ErrRecordNotFound {
@@ -273,7 +285,8 @@ func main() {
 			itemsSplit := make([]VideoEntity, limit)
 			if start != "" {
 				startInt, _ := strconv.Atoi(start)
-				itemsSplit = items[startInt:][:limit]
+				itemsSplit = items[startInt:]
+				itemsSplit = itemsSplit[:limit]
 			} else {
 				itemsSplit = items
 			}
