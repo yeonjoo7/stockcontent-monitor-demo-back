@@ -208,12 +208,12 @@ func main() {
 				// content의 키 값으로 deny-log를 추가해서 반환
 
 				var Result struct {
-					ContentId     uuid.UUID       `json:"contentId"`
-					StateLabel    Videostate      `json:"stateLabel"`
-					MonitorExp    int64           `json:"monitorExp"`
-					Subject       string          `json:"subject"`
-					Description   string          `json:"description"`
-					Thumb         string          `json:"thumb"`
+					ContentId   uuid.UUID  `json:"contentId"`
+					StateLabel  Videostate `json:"stateLabel"`
+					MonitorExp  int64      `json:"monitorExp"`
+					Subject     string     `json:"subject"`
+					Description string     `json:"description"`
+					// Thumb         string          `json:"thumb"`
 					SampleContent string          `json:"sampleContent"`
 					Tags          TagList         `gorm:"type:json" json:"tags"`
 					UploadedAt    time.Time       `json:"uploadedAt"`
@@ -224,7 +224,7 @@ func main() {
 				Result.MonitorExp = Video.MonitorExp
 				Result.Subject = Video.Subject
 				Result.Description = Video.Description
-				Result.Thumb = Video.Thumb
+				// Result.Thumb = Video.Thumb
 				Result.SampleContent = Video.Thumb
 				Result.Tags = Video.Tags
 				Result.UploadedAt = Video.UploadedAt
@@ -232,8 +232,8 @@ func main() {
 				Result.DenyLogs = make([]denyLogResult, len(DenyLogResult))
 				for i, v := range DenyLogResult {
 					Result.DenyLogs[i] = denyLogResult{
-						LogId:         v.LogId,
-						ContentId:     v.ContentId,
+						LogId: v.LogId,
+						// ContentId:     v.ContentId,
 						DenyTagEntity: strings.Split(v.DenyTagEntity, ","), // ** todo refactor
 						Reason:        v.Reason,
 						DeniedAt:      v.DeniedAt,
