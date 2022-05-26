@@ -225,7 +225,7 @@ func main() {
 				Result.Subject = Video.Subject
 				Result.Description = Video.Description
 				// Result.Thumb = Video.Thumb
-				Result.SampleContent = Video.Thumb
+				Result.SampleContent = Video.SampleContent
 				Result.Tags = Video.Tags
 				Result.UploadedAt = Video.UploadedAt
 
