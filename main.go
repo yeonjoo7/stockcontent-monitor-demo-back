@@ -17,6 +17,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/joho/godotenv"
 	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v4/middleware"
 	"gorm.io/gorm"
 )
 
@@ -30,6 +31,7 @@ func init() {
 func main() {
 	db := model.MysqlRepo()
 	e := echo.New()
+	e.Use(middleware.CORS())
 
 	e.GET("/", func(c echo.Context) error {
 		return c.JSON(http.StatusOK, echo.Map{
