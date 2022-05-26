@@ -327,10 +327,10 @@ func main() {
 				return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 			}
 
-			video.MonitorExp = time.Now().Add(10 * time.Minute).Unix()
+			video.MonitorExp = time.Now().Add(5 * time.Minute).Unix()
 			db.Save(&video)
 
-			timer := "Time to monitor ends in 10 minutes"
+			timer := "Time to monitor ends in 5 minutes"
 			return c.JSON(http.StatusOK, echo.Map{
 				"message": timer,
 			})
