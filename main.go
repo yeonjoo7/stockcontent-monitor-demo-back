@@ -3,6 +3,7 @@ package main
 import (
 	"database/sql/driver"
 	"math"
+	"strings"
 
 	// "database/sql"
 	"database/sql"
@@ -165,10 +166,16 @@ func main() {
 
 				// content_id별로 deny-log 조회
 
-				var DenyLogResult []denyLogResult
+				var DenyLogResult []struct {
+					LogId         int64     `gorm:"column:log_id"`
+					ContentId     uuid.UUID `gorm:"column:content_id"`
+					DenyTagEntity string    `gorm:"column:deny_tag"` // "asadf,qwe"
+					Reason        string    `gorm:"column:reason"`
+					DeniedAt      time.Time `gorm:"column:denied_at"`
+				}
 
 				db.Raw(`SELECT dl.log_id, dl.content_id, dl.reason, dl.denied_at, 
-				group_concat(json_array(dt.content)) AS deny_tag 
+				group_concat(dt.content) AS deny_tag 
 				FROM deny_log dl 
 				LEFT JOIN stock_content_deny_tag sc ON dl.log_id=sc.deny_log_entity_log_id 
 				LEFT JOIN deny_tag dt	ON sc.deny_tag_entity_tag_id=dt.tag_id 
@@ -197,7 +204,18 @@ func main() {
 				Result.SampleContent = Video.Thumb
 				Result.Tags = Video.Tags
 				Result.UploadedAt = Video.UploadedAt
-				Result.DenyLogs = DenyLogResult
+
+				Result.DenyLogs = make([]denyLogResult, len(DenyLogResult))
+				for i, v := range DenyLogResult {
+					Result.DenyLogs[i] = denyLogResult{
+						LogId:         v.LogId,
+						ContentId:     v.ContentId,
+						DenyTagEntity: strings.Split(v.DenyTagEntity, ","), // ** todo refactor
+						Reason:        v.Reason,
+						DeniedAt:      v.DeniedAt,
+					}
+				}
+				// Result.DenyLogs = DenyLogResult
 
 				return c.JSON(http.StatusOK, Result)
 			})
@@ -298,12 +316,19 @@ func main() {
 
 // denyLogResult struct for Mysql JOIN
 
+// type denyLogResult struct {
+// 	LogId         int64     `gorm:"column:log_id" json:"logId"`
+// 	ContentId     uuid.UUID ` gorm:"column:content_id" json:"contentId"`
+// 	DenyTagEntity string    `gorm:"column:deny_tag;type:json" json:"deny_tag"`
+// 	Reason        string    `gorm:"column:reason" json:"reason"`
+// 	DeniedAt      time.Time `gorm:"column:denied_at" json:"denied_at"`
+// }
 type denyLogResult struct {
-	LogId         int64     `gorm:"column:log_id" json:"logId"`
-	ContentId     uuid.UUID ` gorm:"column:content_id" json:"contentId"`
-	DenyTagEntity string    `gorm:"column:deny_tag;type:json" json:"deny_tag"`
-	Reason        string    `gorm:"column:reason" json:"reason"`
-	DeniedAt      time.Time `gorm:"column:denied_at" json:"denied_at"`
+	LogId         int64     `json:"logId"`
+	ContentId     uuid.UUID `json:"contentId"`
+	DenyTagEntity []string  `json:"deny_tag"`
+	Reason        string    `json:"reason"`
+	DeniedAt      time.Time `json:"denied_at"`
 }
 
 // video entity
