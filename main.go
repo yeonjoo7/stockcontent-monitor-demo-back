@@ -2,6 +2,7 @@ package main
 
 import (
 	"database/sql/driver"
+	"fmt"
 	"math"
 	"strings"
 
@@ -19,6 +20,11 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"gorm.io/gorm"
+)
+
+const (
+	MonitroEpxiresValue = 5
+	MonitorExpiresTime  = MonitroEpxiresValue * time.Minute
 )
 
 func init() {
@@ -109,8 +115,8 @@ func main() {
 			return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 		}
 
-		var video VideoEntity
-		db.Model(&video).Where("content_id = ?", ChangeApproceEntity.Content_id).Update("state_label", "APPROVE")
+		// var video VideoEntity
+		db.Model(&VideoEntity{}).Where("content_id = ?", ChangeApproceEntity.Content_id).Update("state_label", "APPROVE")
 
 		if err == gorm.ErrRecordNotFound {
 			return echo.NewHTTPError(http.StatusNotFound, "APPROVE entity not found")
@@ -146,7 +152,7 @@ func main() {
 			// content-label 변환
 
 			if Video.StateLabel == "NONE" {
-				if Video.MonitorExp-time.Now().Unix() > 0 {
+				if Video.MonitorExp-time.Now().UnixMilli() > 0 {
 					Video.StateLabel = "CHECK"
 				} else {
 					Video.StateLabel = "WAIT"
@@ -181,7 +187,7 @@ func main() {
 				// content-label 변환
 
 				if Video.StateLabel == "NONE" {
-					if Video.MonitorExp-time.Now().Unix() > 0 {
+					if Video.MonitorExp-time.Now().UnixMilli() > 0 {
 						Video.StateLabel = "CHECK"
 					} else {
 						Video.StateLabel = "WAIT"
@@ -254,7 +260,7 @@ func main() {
 			state := c.QueryParam("state")
 			limit, err := strconv.Atoi(c.QueryParam("lim"))
 
-			start := c.QueryParam("start")
+			start, _ := strconv.Atoi(c.QueryParam("start"))
 			// contentId := c.QueryParam("contentId")
 
 			if err != nil {
@@ -262,20 +268,46 @@ func main() {
 			}
 
 			var items []VideoEntity
-			err = db.Where("state_label = ?", state).Find(&items).Error
+			err = db.Where("state_label = ?", state).
+				Offset(start).
+				Limit(limit).
+				Order("`uploaded_at` ASC").
+				Find(&items).Error
+
+			var total int64
+			db.Model(&VideoEntity{}).Where("state_label = ?", state).Count(&total)
+			// SELECT * FROM `video` WHERE `state_label` = ?
+			// SELECT * FROM `video` WHERE `state_label` = ? AND `uploaded_at` > 23543  ORDER BY `uploaded_at` ASC LIMIT ?
+			// EXPLAIN
+
+			// SELECT COUNT(1) FROM `video`;
+
+			// items - 3개
+			// id 					uploaded_at
+			// aseteljewr		10000
+			// asdfaerwlkj	20000
+			// asdfljqwekj	23543
+
+			/*
+				{
+					"items": [...],
+					"next": "eyJ1cGxvYWRlZF9hdCI6IDIzNTQzfQ"
+				}
+			*/
+
+			// /items
+			// /items?c=eyJ1cGxvYWRlZF9hdCI6IDIzNTQzfQ
+			// /items?cursor=eyJ1cGxvYWRlZF9hdCI6IDIzNTQzfQ
+
 			if err != nil {
 				return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
-			}
-
-			if len(items) == 0 {
-				return c.NoContent(http.StatusNoContent)
 			}
 
 			// state 변환
 
 			for i := 0; i < len(items); i++ {
 				if items[i].StateLabel == "NONE" {
-					if items[i].MonitorExp-time.Now().Unix() > 0 {
+					if items[i].MonitorExp-time.Now().UnixMilli() > 0 {
 						items[i].StateLabel = "CHECK"
 					} else {
 						items[i].StateLabel = "WAIT"
@@ -283,27 +315,15 @@ func main() {
 				}
 			}
 
-			// 리스트 페이지 수를 추가해서 반환하기
+			// 리스트 페이지 수를 추가해서 반환하기 -> 전체 아이템 갯수를 반환하는 방법!
 
 			type Contents struct {
 				Items      []VideoEntity `json:"items"`
 				TotalPages int           `json:"totalPages"`
 			}
 
-			totalPages := int(math.Ceil(float64(len(items)) / float64(limit)))
-
-			// limit 만큼 자르기, start 를 offset 값으로 주기
-
-			itemsSplit := make([]VideoEntity, limit)
-			if start != "" {
-				startInt, _ := strconv.Atoi(start)
-				itemsSplit = items[startInt:]
-			} else {
-				itemsSplit = items
-			}
-
-			result := Contents{Items: itemsSplit, TotalPages: totalPages}
-
+			totalPages := int(math.Ceil(float64(total) / float64(limit)))
+			result := Contents{Items: items, TotalPages: totalPages}
 			return c.JSON(http.StatusOK, result)
 		})
 
@@ -327,12 +347,11 @@ func main() {
 				return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 			}
 
-			video.MonitorExp = time.Now().Add(5 * time.Minute).Unix()
+			video.MonitorExp = time.Now().Add(MonitorExpiresTime).UnixMilli()
 			db.Save(&video)
 
-			timer := "Time to monitor ends in 5 minutes"
 			return c.JSON(http.StatusOK, echo.Map{
-				"message": timer,
+				"message": fmt.Sprintf("Time to monitor ends in %d minutes", MonitroEpxiresValue),
 			})
 		})
 	}
@@ -413,7 +432,7 @@ func (DenyLogEntity) TableName() string {
 // deny Tag
 
 type DenyTagEntity struct {
-	TagId   int16  `gorm:"primaryKey;auto_increment"`
+	TagId   int16  `gorm:"primaryKey;auto_increment" json:"tagId"`
 	Content string `gorm:"type:varchar(100);not null" json:"content"`
 }
 
