@@ -23,8 +23,8 @@ import (
 )
 
 const (
-	MonitroEpxiresValue = 5
-	MonitorExpiresTime  = MonitroEpxiresValue * time.Minute
+	MonitroEpxiresValue = 1
+	MonitorExpiresTime  = MonitroEpxiresValue * time.Second
 )
 
 func init() {
