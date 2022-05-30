@@ -338,17 +338,17 @@ func main() {
 				return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 			}
 
-			var video VideoEntity
+			var Video VideoEntity
 
-			err = db.First(&video, binder.ContentId).Error
+			err = db.First(&Video, binder.ContentId).Error
 			if err == gorm.ErrRecordNotFound {
 				return echo.NewHTTPError(http.StatusNotFound, "No record")
 			} else if err != nil {
 				return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 			}
 
-			video.MonitorExp = time.Now().Add(MonitorExpiresTime).UnixMilli()
-			db.Save(&video)
+			Video.MonitorExp = time.Now().Add(MonitorExpiresTime).UnixMilli()
+			db.Save(&Video)
 
 			return c.JSON(http.StatusOK, echo.Map{
 				"message": fmt.Sprintf("Time to monitor ends in %d minutes", MonitroEpxiresValue),
@@ -383,7 +383,7 @@ type TagList []string
 type VideoEntity struct {
 	ContentId     uuid.UUID  `gorm:"type:varchar(36);primaryKey;not null;" json:"contentId"`
 	StateLabel    Videostate `gorm:"type:varchar(30);not null;default:NONE;"  json:"stateLabel" validate:"eq=APPORVE|eq=DENY|eq=NONE"`
-	MonitorExp    int64      `gorm:"autoUpdateTime:milli;" json:"monitorExp"`
+	MonitorExp    int64      `gorm:"not null;" json:"monitorExp"`
 	Subject       string     `gorm:"type:varchar(60);not null" json:"subject"`
 	Description   string     `gorm:"type:varchar(300);not null" json:"description"`
 	Thumb         string     `gorm:"not null" json:"thumb"`
