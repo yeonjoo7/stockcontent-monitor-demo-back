@@ -273,6 +273,20 @@ func main() {
 				Order("`uploaded_at` ASC").
 				Find(&items).Error
 
+			type DenyItems struct {
+				ContentId     uuid.UUID  `json:"contentId"`
+				StateLabel    Videostate `json:"stateLabel"`
+				MonitorExp    int64      `json:"monitorExp"`
+				Subject       string     `json:"subject"`
+				Description   string     `json:"description"`
+				Thumb         string     `json:"thumb"`
+				SampleContent string     `json:"sampleContent"`
+				Tags          TagList    `json:"tags"`
+				UploadedAt    time.Time  `json:"uploadedAt"`
+				DeniedAt      time.Time  `json:"latestDeniedAt, omitempty"`
+			}
+			var DenyItemsResult []DenyItems
+
 			var total int64
 			db.Model(&VideoEntity{}).Where("state_label = ?", state).Count(&total)
 			// SELECT * FROM `video` WHERE `state_label` = ?
@@ -314,16 +328,36 @@ func main() {
 				}
 			}
 
+			// latest Denied At 추가하기
+
+			db.Raw(`SELECT v.*, dl.denied_at 
+			FROM video v 
+			LEFT JOIN deny_log dl	ON v.content_id = dl.content_id 
+			WHERE v.state_label = "DENY" 
+			ORDER BY dl.denied_at DESC`).Scan(&DenyItemsResult)
+
 			// 리스트 페이지 수를 추가해서 반환하기 -> 전체 아이템 갯수를 반환하는 방법!
 
-			type Contents struct {
-				Items      []VideoEntity `json:"items"`
-				TotalItems int           `json:"totalItems"`
+			if state != "DENY" {
+				type Contents struct {
+					Items      []VideoEntity `json:"items"`
+					TotalItems int           `json:"totalItems"`
+				}
+
+				// totalPages := int(math.Ceil(float64(total) / float64(limit)))
+				result := Contents{Items: items, TotalItems: int(total)}
+				return c.JSON(http.StatusOK, result)
+			} else {
+				type Contents struct {
+					Items      []DenyItems `json:"items"`
+					TotalItems int         `json:"totalItems"`
+				}
+
+				// totalPages := int(math.Ceil(float64(total) / float64(limit)))
+				result := Contents{Items: DenyItemsResult, TotalItems: int(total)}
+				return c.JSON(http.StatusOK, result)
 			}
 
-			// totalPages := int(math.Ceil(float64(total) / float64(limit)))
-			result := Contents{Items: items, TotalItems: int(total)}
-			return c.JSON(http.StatusOK, result)
 		})
 
 		// PUT
