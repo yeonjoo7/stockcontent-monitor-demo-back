@@ -3,7 +3,6 @@ package main
 import (
 	"database/sql/driver"
 	"fmt"
-	"math"
 	"strings"
 
 	// "database/sql"
@@ -319,11 +318,11 @@ func main() {
 
 			type Contents struct {
 				Items      []VideoEntity `json:"items"`
-				TotalPages int           `json:"totalPages"`
+				TotalItems int           `json:"totalItems"`
 			}
 
-			totalPages := int(math.Ceil(float64(total) / float64(limit)))
-			result := Contents{Items: items, TotalPages: totalPages}
+			// totalPages := int(math.Ceil(float64(total) / float64(limit)))
+			result := Contents{Items: items, TotalItems: int(total)}
 			return c.JSON(http.StatusOK, result)
 		})
 
