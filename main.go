@@ -276,28 +276,6 @@ func main() {
 
 			var total int64
 			db.Model(&VideoEntity{}).Where("state_label = ?", state).Count(&total)
-			// SELECT * FROM `video` WHERE `state_label` = ?
-			// SELECT * FROM `video` WHERE `state_label` = ? AND `uploaded_at` > 23543  ORDER BY `uploaded_at` ASC LIMIT ?
-			// EXPLAIN
-
-			// SELECT COUNT(1) FROM `video`;
-
-			// items - 3개
-			// id 					uploaded_at
-			// aseteljewr		10000
-			// asdfaerwlkj	20000
-			// asdfljqwekj	23543
-
-			/*
-				{
-					"items": [...],
-					"next": "eyJ1cGxvYWRlZF9hdCI6IDIzNTQzfQ"
-				}
-			*/
-
-			// /items
-			// /items?c=eyJ1cGxvYWRlZF9hdCI6IDIzNTQzfQ
-			// /items?cursor=eyJ1cGxvYWRlZF9hdCI6IDIzNTQzfQ
 
 			if err != nil {
 				return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
@@ -359,15 +337,6 @@ func main() {
 	e.Start(os.Getenv("SERVE_ADDR"))
 }
 
-// denyLogResult struct for Mysql JOIN
-
-// type denyLogResult struct {
-// 	LogId         int64     `gorm:"column:log_id" json:"logId"`
-// 	ContentId     uuid.UUID ` gorm:"column:content_id" json:"contentId"`
-// 	DenyTagEntity string    `gorm:"column:deny_tag;type:json" json:"deny_tag"`
-// 	Reason        string    `gorm:"column:reason" json:"reason"`
-// 	DeniedAt      time.Time `gorm:"column:denied_at" json:"denied_at"`
-// }
 type denyLogResult struct {
 	LogId         int64     `json:"logId"`
 	ContentId     uuid.UUID `json:"contentId"`
