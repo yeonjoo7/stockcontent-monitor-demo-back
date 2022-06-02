@@ -29,10 +29,7 @@
 <br/>
 
 ## 3. 데모
-시연 영상 : https://www.youtube.com/watch?v=dL2uvzAaWh8&ab_channel=lgh
----
-
-<br/>
+시연 영상 : https://youtu.be/dL2uvzAaWh8
 <br/>
 
 ## 4. 기술 스택
