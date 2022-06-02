@@ -50,7 +50,6 @@ func main() {
 		if err != nil {
 			return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 		}
-
 		return c.JSON(http.StatusOK, denyTag)
 
 	})
@@ -78,7 +77,6 @@ func main() {
 
 			tx.Model(&video).Where("content_id = ?", ChangeDenyEntity.Content_id).Update("state_label", "DENY")
 			tx.Create(&logId)
-
 			for i := 0; i < len(ChangeDenyEntity.Tag_id); i++ {
 				tx.Exec("INSERT INTO stock_content_deny_tag VALUES ( ?, ? );", logId.LogId, ChangeDenyEntity.Tag_id[i])
 			}
@@ -207,12 +205,11 @@ func main() {
 				// content의 키 값으로 deny-log를 추가해서 반환
 
 				var Result struct {
-					ContentId   uuid.UUID  `json:"contentId"`
-					StateLabel  Videostate `json:"stateLabel"`
-					MonitorExp  int64      `json:"monitorExp"`
-					Subject     string     `json:"subject"`
-					Description string     `json:"description"`
-					// Thumb         string          `json:"thumb"`
+					ContentId     uuid.UUID       `json:"contentId"`
+					StateLabel    Videostate      `json:"stateLabel"`
+					MonitorExp    int64           `json:"monitorExp"`
+					Subject       string          `json:"subject"`
+					Description   string          `json:"description"`
 					SampleContent string          `json:"sampleContent"`
 					Tags          TagList         `gorm:"type:json" json:"tags"`
 					UploadedAt    time.Time       `json:"uploadedAt"`
@@ -223,7 +220,6 @@ func main() {
 				Result.MonitorExp = Video.MonitorExp
 				Result.Subject = Video.Subject
 				Result.Description = Video.Description
-				// Result.Thumb = Video.Thumb
 				Result.SampleContent = Video.SampleContent
 				Result.Tags = Video.Tags
 				Result.UploadedAt = Video.UploadedAt
@@ -231,15 +227,12 @@ func main() {
 				Result.DenyLogs = make([]denyLogResult, len(DenyLogResult))
 				for i, v := range DenyLogResult {
 					Result.DenyLogs[i] = denyLogResult{
-						LogId: v.LogId,
-						// ContentId:     v.ContentId,
-						DenyTagEntity: strings.Split(v.DenyTagEntity, ","), // ** todo refactor
+						LogId:         v.LogId,
+						DenyTagEntity: strings.Split(v.DenyTagEntity, ","),
 						Reason:        v.Reason,
 						DeniedAt:      v.DeniedAt,
 					}
 				}
-				// Result.DenyLogs = DenyLogResult
-
 				return c.JSON(http.StatusOK, Result)
 			})
 
@@ -254,7 +247,6 @@ func main() {
 			limit, err := strconv.Atoi(c.QueryParam("lim"))
 
 			start, _ := strconv.Atoi(c.QueryParam("start"))
-			// contentId := c.QueryParam("contentId")
 
 			if err != nil {
 				return echo.NewHTTPError(http.StatusBadRequest, err.Error())
@@ -316,7 +308,6 @@ func main() {
 					TotalItems int           `json:"totalItems"`
 				}
 
-				// totalPages := int(math.Ceil(float64(total) / float64(limit)))
 				result := Contents{Items: items, TotalItems: int(total)}
 				return c.JSON(http.StatusOK, result)
 			} else {
@@ -385,8 +376,7 @@ type VideoEntity struct {
 	Thumb         string     `gorm:"not null" json:"thumb"`
 	SampleContent string     `gorm:"not null" json:"sampleContent"`
 	Tags          TagList    `gorm:"type:json" json:"tags"`
-	// Tags       datatypes.JSON `gorm:"type:json" json:"tags"`
-	UploadedAt time.Time `gorm:"type:datetime(6);not null;" json:"uploadedAt"`
+	UploadedAt    time.Time  `gorm:"type:datetime(6);not null;" json:"uploadedAt"`
 
 	DenyLogs []DenyLogEntity `gorm:"foreignKey:ContentId" json:"denyLog"`
 }
