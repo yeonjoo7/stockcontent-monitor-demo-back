@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"strings"
 
-	// "database/sql"
 	"database/sql"
 	"net/http"
 	"os"
@@ -52,10 +51,6 @@ func main() {
 			return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 		}
 
-		// if len(denyTag) == 0 {
-		// 	return c.NoContent(http.StatusNoContent)
-		// }
-
 		return c.JSON(http.StatusOK, denyTag)
 
 	})
@@ -83,8 +78,7 @@ func main() {
 
 			tx.Model(&video).Where("content_id = ?", ChangeDenyEntity.Content_id).Update("state_label", "DENY")
 			tx.Create(&logId)
-			// tx.Exec("INSERT INTO deny_log(content_id, reason, denied_at) VALUES ( ? , ? , ?);", ChangeDenyEntity.Content_id, ChangeDenyEntity.Reason, time.Now())
-			// 	tx.Last(&logId)
+
 			for i := 0; i < len(ChangeDenyEntity.Tag_id); i++ {
 				tx.Exec("INSERT INTO stock_content_deny_tag VALUES ( ?, ? );", logId.LogId, ChangeDenyEntity.Tag_id[i])
 			}
